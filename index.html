@@ -21,7 +21,11 @@
     --error: #b3261e;
   }
   * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { margin: 0; height: 100%; overflow: hidden; }
+  html, body {
+    margin: 0;
+    height: 100%;
+    overflow: hidden;
+  }
   body {
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     background: var(--cream);
@@ -46,63 +50,174 @@
     height: 10px;
     background: radial-gradient(ellipse at top, rgba(0,0,0,0.12), transparent 70%);
   }
-  .header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .brand { display: flex; align-items: center; gap: 10px; }
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
   .brand-mark {
-    width: 34px; height: 34px; border-radius: 10px;
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
     background: linear-gradient(135deg, var(--accent-hi), var(--accent));
-    display: flex; align-items: center; justify-content: center;
-    font-size: 17px; flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    flex-shrink: 0;
     box-shadow: 0 3px 8px rgba(193, 120, 23, 0.4);
   }
-  h1 { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; margin: 0; letter-spacing: 0.2px; line-height: 1.1; }
-  h1 em { font-style: italic; color: var(--accent-hi); }
-  .subtitle { font-size: 11.5px; color: #c9b8a4; margin-top: 2px; font-weight: 500; letter-spacing: 0.2px; }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.2px;
+    line-height: 1.1;
+  }
+  h1 em {
+    font-style: italic;
+    color: var(--accent-hi);
+  }
+  .subtitle {
+    font-size: 11.5px;
+    color: #c9b8a4;
+    margin-top: 2px;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+  }
   #refresh-btn {
-    background: var(--accent); color: white; border: none; padding: 9px 15px;
-    border-radius: 20px; font-size: 12.5px; font-weight: 600; cursor: pointer;
-    display: flex; align-items: center; gap: 6px; font-family: inherit;
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 9px 15px;
+    border-radius: 20px;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: inherit;
     box-shadow: 0 3px 10px rgba(193, 120, 23, 0.35);
-    transition: transform 0.15s ease, background 0.15s ease; flex-shrink: 0;
+    transition: transform 0.15s ease, background 0.15s ease;
+    flex-shrink: 0;
   }
   #refresh-btn:active { transform: scale(0.95); }
   #refresh-btn:hover { background: var(--accent-hi); }
   #refresh-btn:disabled { opacity: 0.55; cursor: default; transform: none; }
-  #refresh-btn svg { width: 14px; height: 14px; transition: transform 0.6s ease; }
+  #refresh-btn svg {
+    width: 14px; height: 14px;
+    transition: transform 0.6s ease;
+  }
   #refresh-btn.spinning svg { animation: spin 0.9s linear infinite; }
   @keyframes spin { to { transform: rotate(360deg); } }
   .status-pill {
-    margin-top: 12px; display: inline-flex; align-items: center; gap: 7px;
-    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
-    padding: 6px 12px; border-radius: 20px; font-size: 12px; color: var(--latte); font-weight: 500;
+    margin-top: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: var(--latte);
+    font-weight: 500;
   }
-  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #6fbf73; flex-shrink: 0; }
+  .status-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #6fbf73;
+    flex-shrink: 0;
+  }
   .status-dot.loading { background: var(--accent-hi); animation: pulse 1s ease-in-out infinite; }
   .status-dot.error { background: #e5615a; }
   @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
   #error-banner {
-    display: none; background: #fbeae9; color: var(--error); padding: 10px 20px;
-    font-size: 12.5px; font-weight: 500; border-bottom: 1px solid #f2c9c6; position: relative; z-index: 15;
+    display: none;
+    background: #fbeae9;
+    color: var(--error);
+    padding: 10px 20px;
+    font-size: 12.5px;
+    font-weight: 500;
+    border-bottom: 1px solid #f2c9c6;
+    position: relative;
+    z-index: 15;
   }
-  #map-wrap { flex: 1; position: relative; min-height: 0; }
+  #map-wrap {
+    flex: 1;
+    position: relative;
+    min-height: 0;
+  }
   #map { position: absolute; inset: 0; }
   #count-badge {
-    position: absolute; left: 16px; bottom: 16px; z-index: 10;
-    background: var(--cream-hi); border-radius: 16px; padding: 10px 16px;
+    position: absolute;
+    left: 16px;
+    bottom: 16px;
+    z-index: 10;
+    background: var(--cream-hi);
+    border-radius: 16px;
+    padding: 10px 16px;
     box-shadow: 0 6px 20px rgba(43, 29, 22, 0.18);
-    display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600;
-    color: var(--coffee-dark); max-width: calc(100% - 32px);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--coffee-dark);
+    max-width: calc(100% - 32px);
   }
-  #count-badge .num { font-family: 'Fraunces', serif; font-size: 20px; color: var(--accent); line-height: 1; }
-  #count-badge .label { font-size: 10.5px; font-weight: 500; color: var(--coffee-mid); text-transform: uppercase; letter-spacing: 0.4px; }
-  #config-screen { flex: 1; display: flex; align-items: center; justify-content: center; padding: 24px; background: var(--cream); }
+  #count-badge .num {
+    font-family: 'Fraunces', serif;
+    font-size: 20px;
+    color: var(--accent);
+    line-height: 1;
+  }
+  #count-badge .label {
+    font-size: 10.5px;
+    font-weight: 500;
+    color: var(--coffee-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  #config-screen {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: var(--cream);
+  }
   .config-box {
-    background: var(--cream-hi); border-radius: 18px; padding: 30px 28px; max-width: 460px;
-    box-shadow: 0 10px 30px rgba(43, 29, 22, 0.12); border: 1px solid var(--latte);
+    background: var(--cream-hi);
+    border-radius: 18px;
+    padding: 30px 28px;
+    max-width: 460px;
+    box-shadow: 0 10px 30px rgba(43, 29, 22, 0.12);
+    border: 1px solid var(--latte);
   }
-  .config-box h2 { font-family: 'Fraunces', serif; margin: 0 0 6px; font-size: 19px; color: var(--coffee-dark); }
+  .config-box h2 {
+    font-family: 'Fraunces', serif;
+    margin: 0 0 6px;
+    font-size: 19px;
+    color: var(--coffee-dark);
+  }
   .config-box p { font-size: 14px; line-height: 1.5; color: var(--coffee-mid); }
-  .config-box code { background: var(--latte); color: var(--coffee-dark); padding: 2px 6px; border-radius: 5px; font-size: 12.5px; font-family: ui-monospace, monospace; }
+  .config-box code {
+    background: var(--latte);
+    color: var(--coffee-dark);
+    padding: 2px 6px;
+    border-radius: 5px;
+    font-size: 12.5px;
+    font-family: ui-monospace, monospace;
+  }
   .config-box ol { padding-left: 20px; line-height: 1.7; font-size: 14px; color: var(--coffee-dark); }
   .gm-style .gm-style-iw-c { border-radius: 14px !important; padding: 0 !important; }
   .gm-style-iw-d { overflow: hidden !important; }
@@ -148,9 +263,10 @@
     <h2>Potrebno je podešavanje</h2>
     <p>Otvori ovaj HTML fajl u tekst editoru i popuni dva podatka na dnu skripte:</p>
     <ol>
-      <li><code>SHEET_ID</code> — deo iz URL-a tvog spreadsheeta</li>
-      <li><code>GOOGLE_MAPS_API_KEY</code> — tvoj API ključ</li>
+      <li><code>SHEET_ID</code> — deo iz URL-a tvog spreadsheeta, između <code>/d/</code> i <code>/edit</code> (sheet mora biti "Anyone with the link can view")</li>
+      <li><code>GOOGLE_MAPS_API_KEY</code> — tvoj API ključ iz Google Cloud Console</li>
     </ol>
+    <p style="font-size:13px">Sačuvaj fajl i osveži stranicu.</p>
   </div>
 </div>
 
@@ -198,9 +314,17 @@
   const countBadge = document.getElementById('count-badge');
   const countNum = document.getElementById('count-num');
 
-  function showError(msg) { errorBanner.style.display = 'block'; errorBanner.textContent = msg; }
-  function clearError() { errorBanner.style.display = 'none'; }
-  function setStatus(text, mode) { statusEl.textContent = text; statusDot.className = 'status-dot' + (mode ? ' ' + mode : ''); }
+  function showError(msg) {
+    errorBanner.style.display = 'block';
+    errorBanner.textContent = msg;
+  }
+  function clearError() {
+    errorBanner.style.display = 'none';
+  }
+  function setStatus(text, mode) {
+    statusEl.textContent = text;
+    statusDot.className = 'status-dot' + (mode ? ' ' + mode : '');
+  }
 
   function initMap() {
     map = new google.maps.Map(document.getElementById('map'), {
@@ -227,9 +351,10 @@
     return data.values || [];
   }
 
-  function clearMarkers() { markers.forEach(m => m.setMap(null)); markers = []; }
-
-  let lastGeocodeErrorStatus = null;
+  function clearMarkers() {
+    markers.forEach(m => m.setMap(null));
+    markers = [];
+  }
 
   async function geocodeAddress(address) {
     return new Promise((resolve) => {
@@ -237,7 +362,6 @@
         if (status === 'OK' && results[0]) {
           resolve(results[0].geometry.location);
         } else {
-          if (status !== 'ZERO_RESULTS') lastGeocodeErrorStatus = status;
           resolve(null);
         }
       });
@@ -263,7 +387,6 @@
       clearMarkers();
       const bounds = new google.maps.LatLngBounds();
       let found = 0, failed = 0;
-      lastGeocodeErrorStatus = null;
 
       for (const [naziv, adresa] of dataRows) {
         const loc = await geocodeAddress(adresa);
@@ -298,10 +421,7 @@
       }
 
       setStatus('Ažurirano ' + new Date().toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' }), 'ok');
-      if (failed > 0) {
-        const extra = lastGeocodeErrorStatus ? (' (Google status: ' + lastGeocodeErrorStatus + ')') : '';
-        showError(failed + ' adresa nije mogla da se geokodira' + extra + ' — proveri billing na Google Cloud nalogu.');
-      }
+      if (failed > 0) showError(failed + ' adresa nije mogla da se geokodira — proveri da li su tačno upisane u spreadsheet.');
     } catch (e) {
       showError('Greška: ' + e.message);
       setStatus('Greška pri učitavanju', 'error');
