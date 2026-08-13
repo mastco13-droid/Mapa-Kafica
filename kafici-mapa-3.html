@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Mapa kafića</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+<style>
+  :root {
+    --espresso: #2b1d16;
+    --coffee-dark: #3c2a21;
+    --coffee-mid: #7f5539;
+    --coffee-soft: #b08968;
+    --latte: #e8d9c5;
+    --cream: #f6efe4;
+    --cream-hi: #fbf7f0;
+    --accent: #c17817;
+    --accent-hi: #de9432;
+    --error: #b3261e;
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { margin: 0; height: 100%; overflow: hidden; }
+  body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--cream);
+    color: var(--espresso);
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+  }
+  header {
+    position: relative;
+    z-index: 20;
+    background: linear-gradient(155deg, var(--espresso) 0%, var(--coffee-dark) 70%);
+    color: var(--cream);
+    padding: 18px 20px 16px;
+    box-shadow: 0 4px 18px rgba(43, 29, 22, 0.28);
+  }
+  header::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: -1px;
+    height: 10px;
+    background: radial-gradient(ellipse at top, rgba(0,0,0,0.12), transparent 70%);
+  }
+  .header-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand-mark {
+    width: 34px; height: 34px; border-radius: 10px;
+    background: linear-gradient(135deg, var(--accent-hi), var(--accent));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; flex-shrink: 0;
+    box-shadow: 0 3px 8px rgba(193, 120, 23, 0.4);
+  }
+  h1 { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 600; margin: 0; letter-spacing: 0.2px; line-height: 1.1; }
+  h1 em { font-style: italic; color: var(--accent-hi); }
+  .subtitle { font-size: 11.5px; color: #c9b8a4; margin-top: 2px; font-weight: 500; letter-spacing: 0.2px; }
+  #refresh-btn {
+    background: var(--accent); color: white; border: none; padding: 9px 15px;
+    border-radius: 20px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+    display: flex; align-items: center; gap: 6px; font-family: inherit;
+    box-shadow: 0 3px 10px rgba(193, 120, 23, 0.35);
+    transition: transform 0.15s ease, background 0.15s ease; flex-shrink: 0;
+  }
+  #refresh-btn:active { transform: scale(0.95); }
+  #refresh-btn:hover { background: var(--accent-hi); }
+  #refresh-btn:disabled { opacity: 0.55; cursor: default; transform: none; }
+  #refresh-btn svg { width: 14px; height: 14px; transition: transform 0.6s ease; }
+  #refresh-btn.spinning svg { animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .status-pill {
+    margin-top: 12px; display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+    padding: 6px 12px; border-radius: 20px; font-size: 12px; color: var(--latte); font-weight: 500;
+  }
+  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #6fbf73; flex-shrink: 0; }
+  .status-dot.loading { background: var(--accent-hi); animation: pulse 1s ease-in-out infinite; }
+  .status-dot.error { background: #e5615a; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.35; } }
+  #error-banner {
+    display: none; background: #fbeae9; color: var(--error); padding: 10px 20px;
+    font-size: 12.5px; font-weight: 500; border-bottom: 1px solid #f2c9c6; position: relative; z-index: 15;
+  }
+  #map-wrap { flex: 1; position: relative; min-height: 0; }
+  #map { position: absolute; inset: 0; background: var(--cream); }
+  #count-badge {
+    position: absolute; left: 16px; bottom: 16px; z-index: 500;
+    background: var(--cream-hi); border-radius: 16px; padding: 10px 16px;
+    box-shadow: 0 6px 20px rgba(43, 29, 22, 0.18);
+    display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 600;
+    color: var(--coffee-dark); max-width: calc(100% - 32px);
+  }
+  #count-badge .num { font-family: 'Fraunces', serif; font-size: 20px; color: var(--accent); line-height: 1; }
+  #count-badge .label { font-size: 10.5px; font-weight: 500; color: var(--coffee-mid); text-transform: uppercase; letter-spacing: 0.4px; }
+
+  #search-wrap {
+    position: absolute;
+    top: 14px; left: 14px; right: 14px;
+    z-index: 500;
+  }
+  #search-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--cream-hi);
+    border-radius: 14px;
+    padding: 10px 14px;
+    box-shadow: 0 6px 20px rgba(43, 29, 22, 0.16);
+    border: 1px solid var(--latte);
+  }
+  #search-box svg { width: 17px; height: 17px; color: var(--coffee-mid); flex-shrink: 0; }
+  #search-input {
+    border: none; outline: none; background: transparent;
+    font-family: 'Inter', sans-serif; font-size: 14px; color: var(--espresso);
+    flex: 1; min-width: 0;
+  }
+  #search-input::placeholder { color: var(--coffee-soft); }
+  #search-clear {
+    display: none;
+    border: none; background: var(--latte); color: var(--coffee-dark);
+    width: 20px; height: 20px; border-radius: 50%;
+    font-size: 13px; line-height: 1; cursor: pointer; flex-shrink: 0;
+    align-items: center; justify-content: center;
+  }
+  #search-results-count {
+    font-size: 11px; color: var(--coffee-mid); padding: 6px 4px 0; font-weight: 500;
+  }
+
+
+  .leaflet-popup-content-wrapper { border-radius: 14px !important; padding: 0 !important; }
+  .leaflet-popup-content { margin: 0 !important; }
+  .iw-card { font-family: 'Inter', sans-serif; padding: 12px 15px; min-width: 170px; max-width: 220px; }
+  .iw-status {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;
+    padding: 3px 8px; border-radius: 10px; margin-bottom: 6px; color: white;
+  }
+  .iw-status .dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(255,255,255,0.85); }
+  .iw-title { font-family: 'Fraunces', serif; font-size: 15px; font-weight: 600; color: var(--coffee-dark); margin: 0 0 4px; }
+  .iw-addr { font-size: 12px; color: var(--coffee-mid); line-height: 1.4; }
+  .iw-notes { font-size: 11.5px; color: var(--espresso); line-height: 1.4; margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--latte); }
+  .iw-notes strong { color: var(--coffee-dark); }
+  .coffee-pin { filter: drop-shadow(0 3px 4px rgba(43,29,22,0.35)); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-row">
+    <div class="brand">
+      <div class="brand-mark">☕</div>
+      <div>
+        <h1>Mapa <em>kafića</em></h1>
+        <div class="subtitle">Uživo iz spreadsheeta</div>
+      </div>
+    </div>
+    <button id="refresh-btn" onclick="loadData()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7"/><path d="M21 3v6h-6"/></svg>
+      Osveži
+    </button>
+  </div>
+  <div class="status-pill">
+    <span class="status-dot loading" id="status-dot"></span>
+    <span id="status">Učitavanje…</span>
+  </div>
+</header>
+
+<div id="error-banner"></div>
+
+<div id="map-wrap">
+  <div id="map"></div>
+  <div id="search-wrap">
+    <div id="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="search-input" placeholder="Pretraži kafiće po imenu…" oninput="onSearchInput()">
+      <button id="search-clear" onclick="clearSearch()">✕</button>
+    </div>
+    <div id="search-results-count"></div>
+  </div>
+  <div id="count-badge" style="display:none">
+    <span class="num" id="count-num">0</span>
+    <span class="label">kafića<br>na mapi</span>
+  </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+<script>
+  // ====== Google Sheets API — jedini ključ koji ovde treba, i NE zahteva billing ======
+  const SHEET_ID = "1AQCruSTO-YOk2YBAqgOLIoZBQ4Jk3ExfVGB1JMtwRnk";
+  const GOOGLE_MAPS_API_KEY = "AIzaSyAmBw8UihhzmonfdueraYJMOf0ugLjiglc"; // koristi se SAMO za Sheets API
+  const SHEETS_API_URL = "https://sheets.googleapis.com/v4/spreadsheets/" + SHEET_ID +
+    "/values/A:I?key=" + GOOGLE_MAPS_API_KEY;
+
+  // Mapa: OpenStreetMap pločice (besplatno, bez ključa)
+  // Geokodiranje: Nominatim (besplatno, bez ključa, OSM projekat)
+
+  let map, markers = [];
+  const statusEl = document.getElementById('status');
+  const statusDot = document.getElementById('status-dot');
+  const errorBanner = document.getElementById('error-banner');
+  const refreshBtn = document.getElementById('refresh-btn');
+  const countBadge = document.getElementById('count-badge');
+  const countNum = document.getElementById('count-num');
+  const searchInput = document.getElementById('search-input');
+  const searchClear = document.getElementById('search-clear');
+  const searchResultsCount = document.getElementById('search-results-count');
+
+  function showError(msg) { errorBanner.style.display = 'block'; errorBanner.textContent = msg; }
+  function clearError() { errorBanner.style.display = 'none'; }
+  function setStatus(text, mode) { statusEl.textContent = text; statusDot.className = 'status-dot' + (mode ? ' ' + mode : ''); }
+
+  // Boje markera po statusu
+  const STATUS_COLORS = {
+    'demo running': '#2f6fed',
+    'demo booked': '#7f5539',
+    'contacted': '#e08a2c',
+    'not contacted': '#e08a2c',
+    'meeting booked': '#4a9d5f',
+  };
+  const DEFAULT_STATUS_COLOR = '#8a7361';
+
+  function getStatusColor(status) {
+    if (!status) return DEFAULT_STATUS_COLOR;
+    return STATUS_COLORS[status.trim().toLowerCase()] || DEFAULT_STATUS_COLOR;
+  }
+
+  // Coffee-cup marker ikonica (SVG) — boja tela zavisi od statusa
+  const iconCache = {};
+  function coffeeIconFor(status) {
+    const color = getStatusColor(status);
+    if (iconCache[color]) return iconCache[color];
+    const icon = L.divIcon({
+      className: 'coffee-pin',
+      html: `<svg xmlns="http://www.w3.org/2000/svg" width="38" height="46" viewBox="0 0 44 54">
+        <path d="M22 2C11 2 3 11 3 21c0 14 19 30 19 30s19-16 19-30C41 11 33 2 22 2z" fill="#3c2a21"/>
+        <path d="M22 5C13 5 6 12.5 6 21c0 12 16 26 16 26s16-14 16-26C38 12.5 31 5 22 5z" fill="${color}"/>
+        <circle cx="22" cy="21" r="12" fill="#f6efe4"/>
+        <path d="M16 19h9v4a4.5 4.5 0 0 1-4.5 4.5H20.5A4.5 4.5 0 0 1 16 23v-4z" fill="#3c2a21"/>
+        <path d="M25 20h1.6a2 2 0 0 1 0 4H25" fill="none" stroke="#3c2a21" stroke-width="1.4"/>
+      </svg>`,
+      iconSize: [38, 46],
+      iconAnchor: [19, 46],
+      popupAnchor: [0, -44],
+    });
+    iconCache[color] = icon;
+    return icon;
+  }
+
+  function initMap() {
+    map = L.map('map', { zoomControl: true, attributionControl: true }).setView([44.7866, 20.4489], 12);
+    // CartoDB "Voyager" pločice — toplije, čistije od standardnog OSM stila, i dalje besplatno bez ključa
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    }).addTo(map);
+    loadData();
+  }
+
+  async function fetchSheetRows() {
+    const res = await fetch(SHEETS_API_URL);
+    if (!res.ok) {
+      const body = await res.json().catch(() => null);
+      const reason = body && body.error && body.error.message ? body.error.message : ('HTTP ' + res.status);
+      throw new Error('Ne mogu da učitam sheet — ' + reason);
+    }
+    const data = await res.json();
+    return data.values || [];
+  }
+
+  function clearMarkers() { markers.forEach(m => map.removeLayer(m)); markers = []; }
+
+  function onSearchInput() {
+    const q = searchInput.value.trim().toLowerCase();
+    searchClear.style.display = q ? 'flex' : 'none';
+
+    if (!q) {
+      markers.forEach(m => { if (!map.hasLayer(m)) m.addTo(map); });
+      searchResultsCount.textContent = '';
+      return;
+    }
+
+    let matchCount = 0;
+    const matchedBounds = [];
+    markers.forEach(m => {
+      const isMatch = m._cafeName.toLowerCase().includes(q);
+      if (isMatch) {
+        if (!map.hasLayer(m)) m.addTo(map);
+        matchCount++;
+        matchedBounds.push(m.getLatLng());
+      } else {
+        if (map.hasLayer(m)) map.removeLayer(m);
+      }
+    });
+
+    searchResultsCount.textContent = matchCount === 0
+      ? 'Nema rezultata'
+      : matchCount + (matchCount === 1 ? ' rezultat' : ' rezultata');
+
+    if (matchedBounds.length > 0) {
+      if (matchedBounds.length === 1) {
+        map.setView(matchedBounds[0], 16);
+      } else {
+        map.fitBounds(matchedBounds, { padding: [50, 50] });
+      }
+    }
+  }
+
+  function clearSearch() {
+    searchInput.value = '';
+    onSearchInput();
+    searchInput.blur();
+  }
+
+  // Keš geokodiranih adresa u browseru — ne pitamo Nominatim ponovo za adresu koju smo već rešili
+  const GEOCODE_CACHE_KEY = 'kafici_geocode_cache_v1';
+  function loadCache() {
+    try { return JSON.parse(localStorage.getItem(GEOCODE_CACHE_KEY)) || {}; }
+    catch (e) { return {}; }
+  }
+  function saveCache(cache) {
+    try { localStorage.setItem(GEOCODE_CACHE_KEY, JSON.stringify(cache)); }
+    catch (e) { /* ako je localStorage pun/nedostupan, samo nastavi bez keša */ }
+  }
+  const geocodeCache = loadCache();
+
+  // Nominatim geocoding — besplatno, bez ključa. Pravilo: max 1 zahtev u sekundi (samo za nove adrese).
+  async function geocodeAddress(address) {
+    const key = address.trim().toLowerCase();
+    if (geocodeCache[key]) return geocodeCache[key];
+
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(address);
+    try {
+      const res = await fetch(url, { headers: { 'Accept-Language': 'sr,en' } });
+      if (!res.ok) return null;
+      const results = await res.json();
+      if (results && results.length > 0) {
+        const loc = { lat: parseFloat(results[0].lat), lng: parseFloat(results[0].lon) };
+        geocodeCache[key] = loc;
+        saveCache(geocodeCache);
+        return loc;
+      }
+      return null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+
+  async function loadData() {
+    clearError();
+    refreshBtn.disabled = true;
+    refreshBtn.classList.add('spinning');
+    setStatus('Učitavanje…', 'loading');
+    countBadge.style.display = 'none';
+    searchInput.value = '';
+    searchClear.style.display = 'none';
+    searchResultsCount.textContent = '';
+    try {
+      const rows = await fetchSheetRows();
+
+      let dataRows = rows.filter(r => r.length >= 2 && r[0] && r[1]);
+      if (dataRows.length && /^(naziv|caf[eé]\s*name)$/i.test(dataRows[0][0].trim())) {
+        dataRows = dataRows.slice(1);
+      } else if (dataRows.length && /^(adresa|location)$/i.test((dataRows[0][1] || '').trim())) {
+        dataRows = dataRows.slice(1);
+      }
+
+      clearMarkers();
+      const bounds = [];
+      let found = 0, failed = 0;
+
+      for (let i = 0; i < dataRows.length; i++) {
+        const naziv = dataRows[i][0];
+        const adresa = dataRows[i][1];
+        const statusVal = (dataRows[i][2] || '').trim();
+        const notesVal = (dataRows[i][8] || '').trim();
+        const wasCached = !!geocodeCache[adresa.trim().toLowerCase()];
+        setStatus('Učitavanje ' + (i + 1) + '/' + dataRows.length + '…', 'loading');
+        const loc = await geocodeAddress(adresa);
+        if (loc) {
+          const color = getStatusColor(statusVal);
+          const marker = L.marker([loc.lat, loc.lng], { icon: coffeeIconFor(statusVal) }).addTo(map);
+
+          let popupHtml = '<div class="iw-card">';
+          if (statusVal) {
+            popupHtml += '<div class="iw-status" style="background:' + color + '"><span class="dot"></span>' + escapeHtml(statusVal) + '</div>';
+          }
+          popupHtml += '<p class="iw-title">' + escapeHtml(naziv) + '</p>';
+          popupHtml += '<p class="iw-addr">' + escapeHtml(adresa) + '</p>';
+          if (notesVal) {
+            popupHtml += '<p class="iw-notes"><strong>Notes:</strong> ' + escapeHtml(notesVal) + '</p>';
+          }
+          popupHtml += '</div>';
+
+          marker.bindPopup(popupHtml);
+          marker._cafeName = naziv;
+          markers.push(marker);
+          bounds.push([loc.lat, loc.lng]);
+          found++;
+        } else {
+          failed++;
+        }
+        // Sačekaj samo ako smo STVARNO pitali Nominatim (nova adresa, ne iz keša)
+        if (!wasCached && i < dataRows.length - 1) await sleep(1100);
+      }
+
+      if (found > 0) {
+        map.fitBounds(bounds, { padding: [40, 40] });
+        countNum.textContent = found;
+        countBadge.style.display = 'flex';
+      }
+
+      setStatus('Ažurirano ' + new Date().toLocaleTimeString('sr-RS', { hour: '2-digit', minute: '2-digit' }), 'ok');
+      if (failed > 0) showError(failed + ' adresa nije mogla da se pronađe — proveri da li su tačno upisane u spreadsheet.');
+    } catch (e) {
+      showError('Greška: ' + e.message);
+      setStatus('Greška pri učitavanju', 'error');
+    } finally {
+      refreshBtn.disabled = false;
+      refreshBtn.classList.remove('spinning');
+    }
+  }
+
+  initMap();
+</script>
+
+</body>
+</html>
